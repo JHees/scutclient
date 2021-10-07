@@ -1,6 +1,5 @@
 #include "auth.h"
 #include "tracelog.h"
-#include "info.h"
 
 struct in_addr local_ipaddr;
 uint8_t MAC[6];
@@ -61,16 +60,16 @@ int chkIfUp(int sock) {
 	struct ifreq ifr;
 	bzero(&ifr, sizeof(ifr));
 
-	strncpy(ifr.ifr_name, DeviceName, IFNAMSIZ - 1);
+	strncpy(ifr.ifr_name, conf.DeviceName.c_str(), IFNAMSIZ - 1);
 	if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) {
 		LogWrite(INIT, ERROR, "ioctl get if_flag error: %s", strerror(errno));
 		return -1;
 	}
 	if (ifr.ifr_ifru.ifru_flags & IFF_RUNNING) {
-		LogWrite(INIT, INF, "%s link up.", DeviceName);
+		LogWrite(INIT, INF, "%s link up.", conf.DeviceName.c_str());
 		return 0;
 	} else {
-		LogWrite(INIT, ERROR, "%s link down. Please check it.", DeviceName);
+		LogWrite(INIT, ERROR, "%s link down. Please check it.", conf.DeviceName.c_str());
 		return -1;
 	}
 }
@@ -79,7 +78,7 @@ int getIfIndex(int sock) {
 	struct ifreq ifr;
 	bzero(&ifr, sizeof(ifr));
 
-	strncpy(ifr.ifr_name, DeviceName, IFNAMSIZ - 1);
+	strncpy(ifr.ifr_name, conf.DeviceName.c_str(), IFNAMSIZ - 1);
 	if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0) {
 		LogWrite(INIT, ERROR, "Get interface index error: %s", strerror(errno));
 		return -1;
@@ -92,10 +91,10 @@ int getIfIP(int sock) {
 	struct ifreq ifr;
 	bzero(&ifr, sizeof(ifr));
 
-	strncpy(ifr.ifr_name, DeviceName, IFNAMSIZ - 1);
+	strncpy(ifr.ifr_name, conf.DeviceName.c_str(), IFNAMSIZ - 1);
 	ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(sock, SIOCGIFADDR, &ifr) < 0) {
-		LogWrite(INIT, ERROR, "Unable to get IP address of %s: %s", DeviceName, strerror(errno));
+		LogWrite(INIT, ERROR, "Unable to get IP address of %s: %s", conf.DeviceName.c_str(), strerror(errno));
 		return -1;
 	}
 	local_ipaddr = (((struct sockaddr_in *) &ifr.ifr_addr)->sin_addr);
@@ -106,10 +105,10 @@ int getIfMAC(int sock) {
 	struct ifreq ifr;
 
 	bzero(&ifr, sizeof(ifr));
-	strncpy(ifr.ifr_name, DeviceName, IFNAMSIZ - 1);
+	strncpy(ifr.ifr_name, conf.DeviceName.c_str(), IFNAMSIZ - 1);
 	ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 	if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
-		LogWrite(INIT, ERROR, "Unable to get MAC address of %s: %s", DeviceName, strerror(errno));
+		LogWrite(INIT, ERROR, "Unable to get MAC address of %s: %s", conf.DeviceName.c_str(), strerror(errno));
 		return -1;
 	}
 	memcpy(MAC, ifr.ifr_hwaddr.sa_data, 6);
@@ -216,8 +215,8 @@ int auth_UDP_Init() {
 		return -1;
 	}
 
-	if ((setsockopt(auth_udp_sock, SOL_SOCKET, SO_BINDTODEVICE, DeviceName,
-			strlen(DeviceName))) < 0) {
+	if ((setsockopt(auth_udp_sock, SOL_SOCKET, SO_BINDTODEVICE, conf.DeviceName.c_str(),
+			strlen(conf.DeviceName.c_str()))) < 0) {
 		LogWrite(DRCOM, ERROR, "Bind UDP socket to device failed: %s", strerror(errno));
 		close(auth_udp_sock);
 		return -1;
@@ -226,7 +225,7 @@ int auth_UDP_Init() {
 	bzero(&serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 
-	serv_addr.sin_addr = udpserver_ipaddr;
+	serv_addr.sin_addr = conf.udpserver_ipaddr;
 	serv_addr.sin_port = htons(SERVER_PORT);
 
 	bzero(&local_addr, sizeof(local_addr));
@@ -302,11 +301,11 @@ size_t appendStartPkt(uint8_t header[]) {
 }
 
 size_t appendResponseIdentity(const uint8_t request[]) {
-	return AppendDrcomResponseIdentity(request, EthHeader, UserName, send_8021x_data);
+	return AppendDrcomResponseIdentity(request, EthHeader, conf.UserName.c_str(), send_8021x_data);
 }
 
 size_t appendResponseMD5(const uint8_t request[]) {
-	return AppendDrcomResponseMD5(request, EthHeader, UserName, Password, send_8021x_data);
+	return AppendDrcomResponseMD5(request, EthHeader, conf.UserName.c_str(), conf.Password.c_str(), send_8021x_data);
 }
 
 void initAuthenticationInfo() {
@@ -332,10 +331,10 @@ void initAuthenticationInfo() {
 
 void printIfInfo() {
 	// 打印网络信息到前台显示
-	LogWrite(INIT, INF, "Hostname: %s", HostName);
+	LogWrite(INIT, INF, "Hostname: %s", conf.HostName.c_str());
 	LogWrite(INIT, INF, "IP: %s", inet_ntoa(local_ipaddr));
-	LogWrite(INIT, INF, "DNS: %s", inet_ntoa(dns_ipaddr));
-	LogWrite(INIT, INF, "UDP server: %s", inet_ntoa(udpserver_ipaddr));
+	LogWrite(INIT, INF, "DNS: %s", inet_ntoa(conf.dns_ipaddr));
+	LogWrite(INIT, INF, "UDP server: %s", inet_ntoa(conf.udpserver_ipaddr));
 	LogWrite(INIT, INF, "MAC: %02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
 			MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]);
 }
@@ -653,8 +652,8 @@ int auth_8021x_Handler(uint8_t recv_data[]) {
 				recv_data);
 		// 一秒后才回复
 		sleep(AUTH_8021X_RECV_DELAY);
-		if (OnlineHookCmd) {
-			system(OnlineHookCmd);
+		if (conf.OnlineHookCmd.empty()) {
+			system(conf.OnlineHookCmd.c_str());
 		}
 		//使用心跳超时相关代码判断MISC_START_ALIVE是否超时
 		isNeedHeartBeat = 1;

@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     unsigned int retry_time = 1;
     time_t ctime;
     struct tm *cltime;
-    if (!clipp::parse(argc, argv, cli))
-        std::cout << make_man_page(cli, argv[0]);
+    if (!clipp::parse(argc, argv, conf.cli))
+        std::cout << make_man_page(conf.cli, argv[0]);
 
     if (conf.HostName[0] == 0)
     {
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         conf.HostName = host;
     }
 
-    if ((conf.client != LOGOFF) && !(conf.UserName.empty() && conf.Password.empty()))
+    if (conf.client != LOGOFF && conf.UserName.empty() && conf.Password.empty())
     {
         LogWrite(INIT, ERROR, "Please specify username and password!");
         exit(-1);

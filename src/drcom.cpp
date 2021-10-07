@@ -1,6 +1,5 @@
 #include "drcom.h"
 #include "functions.h"
-#include "info.h"
 
 extern struct in_addr local_ipaddr;
 extern uint8_t MAC[6];
@@ -236,7 +235,7 @@ int Drcom_MISC_INFO_Setter(uint8_t *send_data, uint8_t *recv_data) {
 	send_data[packetlen++] = 0x00;	//len(244高位)
 	send_data[packetlen++] = 0x03;	//step 第几步
 	// 填用户名长度
-	send_data[packetlen++] = strlen(UserName); //uid len  用户ID长度
+	send_data[packetlen++] = strlen(conf.UserName.c_str()); //uid len  用户ID长度
 	// 填MAC
 	memcpy(send_data + packetlen, MAC, 6);
 	packetlen += 6;
@@ -261,16 +260,16 @@ int Drcom_MISC_INFO_Setter(uint8_t *send_data, uint8_t *recv_data) {
 	send_data[packetlen++] = 0x00;
 	send_data[packetlen++] = 0x00;
 	// 填用户名
-	memcpy(send_data + packetlen, UserName, strlen(UserName));
-	packetlen += strlen(UserName);
+	memcpy(send_data + packetlen, conf.UserName.c_str(), strlen(conf.UserName.c_str()));
+	packetlen += strlen(conf.UserName.c_str());
 	// 填计算机名
-	memcpy(send_data + packetlen, HostName, 32 - strlen(UserName));
-	packetlen += 32 - strlen(UserName);
+	memcpy(send_data + packetlen, conf.HostName.c_str(), 32 - strlen(conf.UserName.c_str()));
+	packetlen += 32 - strlen(conf.UserName.c_str());
 	//填充32个0
 	memset(send_data + packetlen, 0x00, 32);
 	packetlen += 12;
 	//填DNS
-	memcpy(send_data + packetlen, (char *) &(dns_ipaddr.s_addr), 4);
+	memcpy(send_data + packetlen, (char *) &(conf.dns_ipaddr.s_addr), 4);
 	packetlen += 4;
 	// 第2,3个DNS忽略
 	packetlen += 16;
@@ -310,13 +309,13 @@ int Drcom_MISC_INFO_Setter(uint8_t *send_data, uint8_t *recv_data) {
 	// 先填充64位0x00 (在这64位里面填充Drcom版本信息)
 	memset(send_data + packetlen, 0x00, 64);
 	// 填充Drcom版本信息
-	memcpy(send_data + packetlen, Version, Version_len);
+	memcpy(send_data + packetlen, conf.Version,conf.Version_len);
 	packetlen += 64;
 
 	// 先填充68位0x00 (在这64位里面填充HASH信息，预留需要补0的四位)
 	memset(send_data + packetlen, 0x00, 68);
 	// 填充HASH信息
-	memcpy(send_data + packetlen, Hash, strlen(Hash));
+	memcpy(send_data + packetlen, conf.Hash.c_str(), strlen(conf.Hash.c_str()));
 	packetlen += 64;
 	//判定是否是4的倍数
 	if (packetlen % 4 != 0) {

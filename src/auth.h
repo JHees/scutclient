@@ -2,7 +2,7 @@
  * ------------
  * 注：核心函数为Authentication()，由该函数执行801.1X认证
  */
-
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,8 +22,8 @@
 #include <linux/if_packet.h>
 
 #include "functions.h"
-#include "info.h"
 #include "drcom.h"
+#include "parsers.h"
 
 #define LOGOFF 0 // 下线标志位
 #define SERVER_ADDR "202.38.210.131"
