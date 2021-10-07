@@ -2,7 +2,7 @@
 // 默认日志最大100KB大小
 #define MAXFILELEN 102400
 char logtime[20];
-char filepath[MAXFILEPATH] = "/tmp/scutclient.log";
+char filepath[MAXFILEPATH] = "./scutclient.log";
 FILE *logfile;
 LOGLEVEL cloglev = INF;
 
