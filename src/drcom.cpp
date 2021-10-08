@@ -1,6 +1,7 @@
 #include "drcom.h"
 #include "functions.h"
 
+extern config conf;
 extern struct in_addr local_ipaddr;
 extern uint8_t MAC[6];
 

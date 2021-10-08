@@ -10,7 +10,7 @@ uint8_t MAC[6];
 #define AUTH_8021X_LOGOFF_DELAY 500000 // 客户端退出登录收包等待时间 0.5秒（50万微秒)
 #define AUTH_8021X_RECV_DELAY  1 // 客户端收8021x报文延时秒数，默认1秒
 #define AUTH_8021X_RECV_TIMES  3 // 客户端收8021x报文重试次数
-
+extern config conf;
 /* 静态常量*/
 const static uint8_t BroadcastAddr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }; // 广播MAC地址
 const static uint8_t MultcastAddr[6] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x03 }; // 多播MAC地址
@@ -419,7 +419,7 @@ int Authentication(int client) {
 	}
 	initAuthenticationInfo();
 	ret = auth_8021x_Logoff();
-	if (client == LOGOFF) {
+	if (client == config::LOGOFF) {
 		close(auth_8021x_sock);
 		return 0;
 	}
@@ -528,7 +528,7 @@ int Drcom_UDP_Handler(uint8_t *recv_data) {
 			BaseHeartbeatTime = time(NULL);
 			lastHBDone = 1;
 			data_len = Drcom_MISC_INFO_Setter(send_udp_data, recv_data);
-			LogWrite(DRCOM, INF,"Server: MISC_RESPONSE_FOR_ALIVE. Send MISC_INFO.");
+			LogWrite(DRCOM, DEBUG,"Server: MISC_RESPONSE_FOR_ALIVE. Send MISC_INFO.");
 			break;
 		case MISC_RESPONSE_INFO:
 			// 存好tail信息，并顺便解密，以备后面udp报文使用
@@ -536,23 +536,23 @@ int Drcom_UDP_Handler(uint8_t *recv_data) {
 			encryptDrcomInfo(tailinfo);
 			data_len = Drcom_MISC_HEART_BEAT_01_TYPE_Setter(send_udp_data, recv_data);
 			isNeedHeartBeat = 1;
-			LogWrite(DRCOM, INF, "Server: MISC_RESPONSE_INFO. Send MISC_HEART_BEAT_01.");
+			LogWrite(DRCOM, DEBUG, "Server: MISC_RESPONSE_INFO. Send MISC_HEART_BEAT_01.");
 			break;
 		case MISC_HEART_BEAT:
 			switch ((DRCOM_MISC_HEART_BEAT_Type) recv_data[5]) {
 			case MISC_FILE_TYPE:
 				data_len = Drcom_MISC_HEART_BEAT_01_TYPE_Setter(send_udp_data, recv_data);
-				LogWrite(DRCOM, INF, "Server: MISC_FILE_TYPE. Send MISC_HEART_BEAT_01.");
+				LogWrite(DRCOM, DEBUG, "Server: MISC_FILE_TYPE. Send MISC_HEART_BEAT_01.");
 				break;
 			case MISC_HEART_BEAT_02_TYPE:
 				data_len = Drcom_MISC_HEART_BEAT_03_TYPE_Setter(send_udp_data, recv_data);
-				LogWrite(DRCOM, INF, "Server: MISC_HEART_BEAT_02. Send MISC_HEART_BEAT_03.");
+				LogWrite(DRCOM, DEBUG, "Server: MISC_HEART_BEAT_02. Send MISC_HEART_BEAT_03.");
 				break;
 			case MISC_HEART_BEAT_04_TYPE:
 				// 收到这个包代表完成一次心跳流程，这里要初始化时间基线，开始计时下次心跳
 				BaseHeartbeatTime = time(NULL);
 				lastHBDone = 1;
-				LogWrite(DRCOM, INF, "Server: MISC_HEART_BEAT_04. Waiting next heart beat cycle.");
+				LogWrite(DRCOM, DEBUG, "Server: MISC_HEART_BEAT_04. Waiting next heart beat cycle.");
 				break;
 			default:
 				LogWrite(DRCOM, ERROR, "Server: Unexpected heart beat request (type:0x%02hhx)!",
@@ -562,7 +562,7 @@ int Drcom_UDP_Handler(uint8_t *recv_data) {
 			break;
 		case MISC_RESPONSE_HEART_BEAT:
 			data_len = Drcom_MISC_HEART_BEAT_01_TYPE_Setter(send_udp_data, recv_data);
-			LogWrite(DRCOM, INF, "Server: MISC_RESPONSE_HEART_BEAT. Send MISC_HEART_BEAT_01.");
+			LogWrite(DRCOM, DEBUG, "Server: MISC_RESPONSE_HEART_BEAT. Send MISC_HEART_BEAT_01.");
 			break;
 		default:
 			LogWrite(DRCOM, ERROR, "UDP Server: Unexpected request (type:0x%02hhx)!",
@@ -593,14 +593,14 @@ int auth_8021x_Handler(uint8_t recv_data[]) {
 	if ((EAP_Code) recv_data[18] == REQUEST) {
 		switch ((EAP_Type) recv_data[22]) {
 		case IDENTITY:
-			LogWrite(DOT1X, INF, "Server: Request Identity.");
+			LogWrite(DOT1X, DEBUG, "Server: Request Identity.");
 			send_8021x_data_len = appendResponseIdentity(recv_data);
-			LogWrite(DOT1X, INF, "Client: Response Identity.");
+			LogWrite(DOT1X, DEBUG, "Client: Response Identity.");
 			break;
 		case MD5:
-			LogWrite(DOT1X, INF, "Server: Request MD5-Challenge.");
+			LogWrite(DOT1X, DEBUG, "Server: Request MD5-Challenge.");
 			send_8021x_data_len = appendResponseMD5(recv_data);
-			LogWrite(DOT1X, INF, "Client: Response MD5-Challenge.");
+			LogWrite(DOT1X, DEBUG, "Client: Response MD5-Challenge.");
 			break;
 		case NOTIFICATION:
 			// 23是data的偏移量，pkg_len-5是减去eapol头部的data的长度

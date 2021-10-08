@@ -23,12 +23,12 @@
 
 #include "functions.h"
 #include "drcom.h"
-#include "parsers.h"
+#include "config.h"
 
-#define LOGOFF 0 // 下线标志位
-#define SERVER_ADDR "202.38.210.131"
-#define SERVER_PORT 61440
-#define DNS_ADDR "222.201.130.30"
+// #define LOGOFF 0 // 下线标志位
+// #define SERVER_ADDR "202.38.210.131"
+// #define SERVER_PORT 61440
+// #define DNS_ADDR "222.201.130.30"
 
 size_t appendResponseIdentity(const uint8_t request[]);
 size_t appendResponseMD5(const uint8_t request[]);
