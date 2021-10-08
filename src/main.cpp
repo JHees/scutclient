@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
                     % " ",
                 option("c", "cli-version")
                     & value("client version")
-                          >> [](const std::string &arg) { conf.Version_len = hexStrToByte(optarg, conf.Version, sizeof(conf.Version)); },
+                          >> [](const std::string &arg) { conf.Version_len = hexStrToByte(arg.c_str(), conf.Version, sizeof(conf.Version)); },
                 (option("T", "net-time")
                  & value("time")
                        >> [](const std::string &arg) {if (sscanf(arg.c_str(), "%hhu:%hhu", &conf.accessTime.a_hour, &conf.accessTime.a_minute) != 2
