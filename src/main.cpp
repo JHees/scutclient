@@ -94,10 +94,10 @@ int main(int argc, char *argv[])
     sigaction(SIGINT, &sa_term, NULL);
 
     /* 调用子函数完成802.1X认证 */
+    unsigned int retry_time = 1;
     while (1)
     {
-        int ret                 = Authentication(conf.client);
-        unsigned int retry_time = 1;
+        int ret = Authentication(conf.client);
 
         if (ret == 1)
         {
