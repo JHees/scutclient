@@ -12,7 +12,7 @@ file(GLOB HEADER_FILE ./src/*)
 list(FILTER HEADER_FILE INCLUDE REGEX "[\\w]*.(hpp|h)$")
 
 add_executable(DrcomScutClient ${SRC_FILE} src/main.cpp)
-add_executable(test src/test.cpp src/tracelog.cpp)
+# add_executable(test src/test.cpp src/tracelog.cpp)
 
 install(TARGETS DrcomScutClient 
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
