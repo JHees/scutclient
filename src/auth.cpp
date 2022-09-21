@@ -70,7 +70,7 @@ int chkIfUp(int sock)
     strncpy(ifr.ifr_name, conf.DeviceName.c_str(), IFNAMSIZ - 1);
     if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0)
     {
-        LogWrite(INIT, ERROR, "ioctl get if_flag error: %s", strerror(errno));
+        LogWrite(INIT, ERROR, "ioctl get if_flag error from ifname %s: %s", conf.DeviceName.c_str(), strerror(errno));
         return -1;
     }
     if (ifr.ifr_ifru.ifru_flags & IFF_RUNNING)
