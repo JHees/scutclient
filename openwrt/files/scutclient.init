@@ -28,7 +28,7 @@ scutclient_validate_scutclient() {
 	uci_validate_section scutclient scutclient "${1}" \
 		'username:string' \
 		'password:string' \
-		'interface:string:wan' || exit 1
+		'interface:string:eth0' || exit 1
 }
 
 scutclient_validate_option() {
